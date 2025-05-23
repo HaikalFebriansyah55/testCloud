@@ -7,7 +7,7 @@ const db = require('./db');  // koneksi database MySQL
 
 const app = express();
 const PORT = 3000;
-const SECRET_KEY = 'ini_rahasia_token'; // Ganti dan simpan di environment variables kalau production
+const SECRET_KEY = 'xK5!9pL2#sQ8*vN1$wR4%yU7&zA3^cF6'; // Ganti dan simpan di environment variables kalau production
 
 app.use(cors());
 app.use(bodyParser.json());
