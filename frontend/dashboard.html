@@ -2,52 +2,161 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .dashboard-container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+    
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+    }
+    
+    .user-info {
+      background-color: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    
+    #welcomeMessage {
+      font-size: 1.2rem;
+      color: #34495e;
+      margin-bottom: 1rem;
+    }
+    
+    .user-email {
+      color: #7f8c8d;
+      font-style: italic;
+    }
+    
+    #logoutBtn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+    
+    #logoutBtn:hover {
+      background-color: #c0392b;
+    }
+    
+    .loading {
+      color: #7f8c8d;
+      font-style: italic;
+    }
+    
+    .error {
+      color: #e74c3c;
+      margin-bottom: 1rem;
+    }
+  </style>
 </head>
 <body>
-  <div id="dashboardPage">
+  <div class="dashboard-container" id="dashboardPage">
     <h2>Dashboard</h2>
-    <p id="welcomeMessage">Memuat data...</p>
+    
+    <div class="user-info">
+      <p id="welcomeMessage" class="loading">Memuat data pengguna...</p>
+      <p id="userEmail" class="user-email"></p>
+    </div>
+    
+    <div id="errorMessage" class="error"></div>
+    
     <button id="logoutBtn">Logout</button>
   </div>
 
   <script>
     const API_URL = 'http://localhost:3000/api';
-
-    async function checkToken() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Silakan login terlebih dahulu!');
-        window.location.href = 'index.html';
-        return;
-      }
-
+    
+    // Fungsi untuk memverifikasi token
+    async function verifyToken(token) {
       try {
-        const res = await fetch(`${API_URL}/verify-token`, {
-          headers: { 'Authorization': 'Bearer ' + token }
+        const response = await fetch(`${API_URL}/verify-token`, {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
-
-        if (!res.ok) {
-          throw new Error('Token tidak valid atau sudah kadaluarsa');
+        
+        if (!response.ok) {
+          throw new Error('Token tidak valid atau sesi telah berakhir');
         }
-
-        const data = await res.json();
-        document.getElementById('welcomeMessage').textContent = `Selamat datang, ${data.user.name}!`;
-      } catch (err) {
-        alert(err.message);
-        localStorage.removeItem('token');
-        window.location.href = 'index.html';
+        
+        return await response.json();
+      } catch (error) {
+        console.error('Error verifying token:', error);
+        throw error;
       }
     }
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.removeItem('token');
-      window.location.href = 'index.html';
-    });
-
-    window.onload = checkToken;
+    
+    // Fungsi untuk menampilkan data user
+    function displayUserData(userData) {
+      document.getElementById('welcomeMessage').textContent = `Selamat datang, ${userData.user.name}!`;
+      document.getElementById('userEmail').textContent = `Email: ${userData.user.email}`;
+      document.getElementById('welcomeMessage').classList.remove('loading');
+    }
+    
+    // Fungsi untuk logout
+    function setupLogout() {
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
+      });
+    }
+    
+    // Fungsi utama untuk inisialisasi dashboard
+    async function initDashboard() {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        document.getElementById('errorMessage').textContent = 'Anda harus login terlebih dahulu';
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 2000);
+        return;
+      }
+      
+      try {
+        const userData = await verifyToken(token);
+        displayUserData(userData);
+      } catch (error) {
+        document.getElementById('welcomeMessage').classList.remove('loading');
+        document.getElementById('errorMessage').textContent = error.message;
+        setTimeout(() => {
+          localStorage.removeItem('token');
+          window.location.href = 'index.html';
+        }, 3000);
+      }
+      
+      setupLogout();
+    }
+    
+    // Jalankan dashboard saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', initDashboard);
   </script>
 </body>
 </html>

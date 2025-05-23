@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'http://localhost:3000';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Fungsi bantu menampilkan pesan
@@ -15,12 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById('registerName').value.trim();
+      const username = document.getElementById('registerName').value.trim();
       const email = document.getElementById('registerEmail').value.trim();
       const password = document.getElementById('registerPassword').value.trim();
       const messageDiv = document.getElementById('registerMessage');
 
-      if (!name || !email || !password) {
+      if (!username || !email || !password) {
         showMessage(messageDiv, 'Semua field wajib diisi.');
         return;
       }
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch(`${API_URL}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password })
+          body: JSON.stringify({ username, email, password })
         });
 
         const data = await res.json();
