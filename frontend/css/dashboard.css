@@ -163,16 +163,6 @@ body {
     margin-bottom: 30px;
 }
 
-.search-form {
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
 .form-group {
     text-align: left;
 }
@@ -517,3 +507,92 @@ body {
         grid-template-columns: 1fr;
     }
 }
+        .ticket-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .ticket-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .route-info {
+            display: flex;
+            gap: 40px;
+        }
+
+        .price-info {
+            text-align: right;
+        }
+
+        .btn-pesan {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .btn-pesan:hover {
+            background-color: #45a049;
+        }
+        
+.search-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.search-form form {
+    display: contents; /* Gunakan jika hanya ingin form sebagai wrapper */
+}
+
+.search-form label {
+    font-weight: 500;
+    color: var(--dark);
+}
+
+.search-form input, 
+.search-form select {
+    padding: 12px 15px;
+    border: 1px solid var(--gray);
+    border-radius: 5px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.search-form button, 
+.btn-search {
+    grid-column: 1 / -1;
+    padding: 15px;
+    background-color: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    align-self: end;
+}
+
+.search-form button:hover,
+.btn-search:hover {
+    background-color: #ea580c;
+}
+

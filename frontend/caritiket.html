@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencarian Tiket Kereta</title>
+    <link rel="stylesheet" href="css/caritiket.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+        .user-info .profile-pic {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .user-info .user-name {
+            font-weight: 500;
+        }
+        
+        /* Tambahkan style untuk user dropdown */
+        .user-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .user-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 5px;
+        }
+        
+        .user-menu a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .user-menu a:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .user-dropdown:hover .user-menu {
+            display: block;
+        }
+        
+        .user-avatar {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background-color: #f1f1f1;
+        }
+        
+        .user-avatar i {
+            margin-right: 5px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-train"></i>
+                <span>RailExpress</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#"><i class="fas fa-home"></i> Beranda</a></li>
+                <li><a href="caritiket.php"><i class="fas fa-search"></i> Cari Tiket</a></li>
+                <li><a href="#"><i class="fas fa-history"></i> Riwayat</a></li>
+                <li><a href="#"><i class="fas fa-info-circle"></i> Informasi</a></li>
+                <div class="auth-buttons" id="authButtons">
+                    <!-- Default state: show login/register -->
+                    <a href="login.html" class="btn-login"><i class="fas fa-user"></i> Login</a>
+                    <a href="register.php" class="btn-register">Daftar</a>
+                </div>
+                <div class="user-dropdown" id="userDropdown" style="display: none;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="usernameDisplay">User</span>
+                    </div>
+                    <div class="user-menu">
+                        <a href="#"><i class="fas fa-user"></i> Profil</a>
+                        <a href="#"><i class="fas fa-history"></i> Riwayat</a>
+                        <a href="#" id="logoutBtnNav"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </ul>
+            <div class="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Form Pencarian -->
+    <section class="search-section">
+        <div class="search-form">
+            <form id="searchForm" class="form-layout">
+                <div class="form-group">
+                    <label for="departure">Stasiun Keberangkatan:</label>
+                    <input type="text" id="departure" name="departure" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="arrival">Stasiun Tujuan:</label>
+                    <input type="text" id="arrival" name="arrival" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Tanggal:</label>
+                    <input type="date" id="date" name="date">
+                </div>
+
+                <!-- Tombol pisah baris -->
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <button type="submit" class="btn-search"><i class="fas fa-search"></i> Cari Tiket</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Tampilkan hasil pencarian -->
+    <div class="ticket-container" id="ticketContainer">
+        <div class="loading" id="loadingMessage">
+            Masukkan stasiun keberangkatan dan tujuan untuk mencari tiket
+        </div>
+        <!-- Ticket results will be inserted here by JavaScript -->
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        
+        // Fungsi untuk memverifikasi token
+        async function verifyToken(token) {
+            try {
+                const response = await fetch(`${API_URL}/auth/verify-token`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Token tidak valid atau sesi telah berakhir');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error verifying token:', error);
+                throw error;
+            }
+        }
+        
+        // Fungsi untuk logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+        
+        // Fungsi untuk memeriksa status login dan menyesuaikan UI
+        async function checkLoginStatus() {
+            const token = localStorage.getItem('token');
+            
+            if (token) {
+                try {
+                    const userData = await verifyToken(token);
+                    
+                    // Sembunyikan tombol login/register
+                    document.getElementById('authButtons').style.display = 'none';
+                    
+                    // Tampilkan dropdown user
+                    const userDropdown = document.getElementById('userDropdown');
+                    userDropdown.style.display = 'block';
+                    
+                    // Isi nama user
+                    document.getElementById('usernameDisplay').textContent = userData.user.name || 'User';
+                    
+                    // Setup logout button
+                    document.getElementById('logoutBtnNav').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        logout();
+                    });
+                    
+                } catch (error) {
+                    console.error('Error verifying token:', error);
+                    // Jika token tidak valid, lakukan logout
+                    logout();
+                }
+            }
+        }
+        
+        // Fungsi untuk mencari tiket
+        async function searchTickets(departure, arrival, date) {
+            const ticketContainer = document.getElementById('ticketContainer');
+            ticketContainer.innerHTML = '<div class="loading">Mencari tiket...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/trains/search?departure=${encodeURIComponent(departure)}&arrival=${encodeURIComponent(arrival)}&date=${encodeURIComponent(date || '')}`);
+                
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data tiket');
+                }
+                
+                const trains = await response.json();
+                
+                if (trains.length === 0) {
+                    ticketContainer.innerHTML = '<p>Tidak ditemukan jadwal kereta untuk rute ini.</p>';
+                    return;
+                }
+                
+                let html = '';
+                trains.forEach(train => {
+                    html += `
+                    <div class="ticket-card">
+                        <div class="train-info">
+                            <h3>${escapeHtml(train.train_name)}</h3>
+                            <p>Kelas: ${escapeHtml(train.train_class)}</p>
+                        </div>
+                        <div class="route-info">
+                            <div>
+                                <strong>${escapeHtml(train.departure_station)}</strong>
+                                <p>Berangkat: ${formatTime(train.departure_time)}</p>
+                            </div>
+                            <div>
+                                <strong>${escapeHtml(train.arrival_station)}</strong>
+                                <p>Tiba: ${formatTime(train.arrival_time)}</p>
+                            </div>
+                        </div>
+                        <div class="price-info">
+                            <p>Mulai dari</p>
+                            <h4>Rp ${formatPrice(train.price)}</h4>
+                            <p>Kursi tersedia: ${train.available_seats}</p>
+                            <a href="pesan.html?train_id=${train.train_id}" class="btn-pesan">Pesan</a>
+                        </div>
+                    </div>
+                    `;
+                });
+                
+                ticketContainer.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error searching tickets:', error);
+                ticketContainer.innerHTML = `<p class="error">${error.message}</p>`;
+            }
+        }
+        
+        // Helper functions
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        function formatTime(timeString) {
+            const date = new Date(timeString);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function formatPrice(price) {
+            return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+        
+        // Handle form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const departure = document.getElementById('departure').value;
+            const arrival = document.getElementById('arrival').value;
+            const date = document.getElementById('date').value;
+            
+            // Update URL parameters
+            const url = new URL(window.location.href);
+            url.searchParams.set('departure', departure);
+            url.searchParams.set('arrival', arrival);
+            if (date) url.searchParams.set('date', date);
+            window.history.pushState({}, '', url);
+            
+            searchTickets(departure, arrival, date);
+        });
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            
+            // Get search parameters from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const departure = urlParams.get('departure');
+            const arrival = urlParams.get('arrival');
+            const date = urlParams.get('date');
+            
+            // Fill form if parameters exist
+            if (departure) document.getElementById('departure').value = departure;
+            if (arrival) document.getElementById('arrival').value = arrival;
+            if (date) document.getElementById('date').value = date;
+            
+            // Perform search if parameters exist
+            if (departure && arrival) {
+                searchTickets(departure, arrival, date);
+            }
+        });
+    </script>
+</body>
+</html>

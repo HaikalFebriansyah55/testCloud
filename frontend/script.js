@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://localhost:3000/api/auth';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Fungsi bantu menampilkan pesan
