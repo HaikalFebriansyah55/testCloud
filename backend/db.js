@@ -4,7 +4,7 @@ const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',       // ganti dengan user MySQL kamu
   password: '',       // ganti dengan password MySQL kamu
-  database: 'testCloud'  // nama database yang kamu pakai
+  database: 'uasclodmysql'  // nama database yang kamu pakai
 });
 
 db.connect(err => {
