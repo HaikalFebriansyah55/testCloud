@@ -213,7 +213,7 @@
     </div>
 
     <script>
-        const API_URL = "http://localhost:3000/api/auth";
+        const API_URL = "http://13.210.215.118:44555/api/auth";
         // Fungsi untuk memverifikasi token
         async function verifyToken(token) {
             try {
@@ -259,7 +259,7 @@
         }
         document.addEventListener('DOMContentLoaded', initNavbarUser);
         async function loadStations() {
-            const res = await fetch('http://localhost:3000/api/station');
+            const res = await fetch('http://13.210.215.118:44555/api/station');
             const stations = await res.json();
             const dep = document.getElementById('departure');
             const arr = document.getElementById('arrival');
@@ -280,7 +280,7 @@
             container.innerHTML = '<p>Mencari tiket...</p>';
 
             try {
-                const res = await fetch(`http://localhost:3000/api/ticket/search?from=${encodeURIComponent(departure)}&to=${encodeURIComponent(arrival)}`);
+                const res = await fetch(`http://13.210.215.118:44555/api/ticket/search?from=${encodeURIComponent(departure)}&to=${encodeURIComponent(arrival)}`);
                 const data = await res.json();
 
                 if (data.length === 0) {

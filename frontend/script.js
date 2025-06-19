@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api/auth';
+const API_URL = 'http://13.210.215.118:44555/api/auth';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Fungsi bantu menampilkan pesan
@@ -146,3 +146,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
