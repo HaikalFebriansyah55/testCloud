@@ -280,7 +280,7 @@
             container.innerHTML = '<p>Mencari tiket...</p>';
 
             try {
-                const res = await fetch(`http://backend2.railexpress.my.id//api/ticket/search?from=${encodeURIComponent(departure)}&to=${encodeURIComponent(arrival)}`);
+                const res = await fetch(`http://backend2.railexpress.my.id/api/ticket/search?from=${encodeURIComponent(departure)}&to=${encodeURIComponent(arrival)}`);
                 const data = await res.json();
 
                 if (data.length === 0) {
