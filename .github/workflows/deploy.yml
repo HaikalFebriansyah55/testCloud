@@ -21,7 +21,7 @@ jobs:
       - name: Deploy to ECS
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@3.27.38.44 << 'EOF'
-            cd var/www/html/testCloud_new
+            cd /var/www/html/testCloud_new
             sudo git pull origin main
             # Restart Nginx or any other service if needed
             sudo systemctl restart nginx
